@@ -22,7 +22,6 @@ std::vector<HANDLE> GetCaelusProcesses(bool include_client = true, bool include_
 	std::vector<HANDLE> result;
 	if (include_client)
 	{
-		// this was pretty much all that needed patching here, studio was already correct
 		for (HANDLE handle : ProcUtil::GetProcessesByImageName("KitsuKitsuPlayerBeta.exe")) result.emplace_back(handle);
 	}
 	if (include_studio) for (HANDLE handle : ProcUtil::GetProcessesByImageName("RobloxStudioBeta.exe")) result.emplace_back(handle);
