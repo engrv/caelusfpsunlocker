@@ -1,9 +1,24 @@
 #include "settings.h"
-#include "rfu.h"
+#include "CFU.h"
 
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <filesystem>
+
+std::string SettingsPath()
+{
+	const char* appdata = std::getenv("APPDATA");
+	if (appdata)
+	{
+		std::filesystem::path path = appdata;
+		path /= "CaelusFPSUnlocker";
+		std::filesystem::create_directories(path);
+		path /= "settings";
+		return path.string();
+	}
+}
 
 namespace Settings
 {
@@ -11,7 +26,8 @@ namespace Settings
 	unsigned char FPSCapSelection = 0;
 	double FPSCap = 0.0;
 	bool UnlockClient = true;
-	bool UnlockStudio = false;
+	//Disable studio setting until studio is complete
+	//bool UnlockStudio = false;
 	bool CheckForUpdates = true;
 	bool NonBlockingErrors = true;
 	bool SilentErrors = false;
@@ -26,13 +42,10 @@ namespace Settings
 
 	bool Load()
 	{
-		std::ifstream file("settings");
-		if (!file.is_open()) return false;
-
-		printf("Loading settings from file...\n");
-
+		std::ifstream file(SettingsPath());
+			if (!file.is_open()) return false;
+			printf("Loading settings file if it exists..\n");
 		std::string line;
-
 		while (std::getline(file, line))
 		{
 			size_t eq = line.find('=');
@@ -51,8 +64,9 @@ namespace Settings
 						FPSCap = std::stod(value);
 					else if (key == "UnlockClient")
 						UnlockClient = std::stoi(value) != 0;
-					else if (key == "UnlockStudio")
-						UnlockStudio = std::stoi(value) != 0;
+					//Disable studio setting until studio is complete
+					//else if (key == "UnlockStudio")
+					//	UnlockStudio = std::stoi(value) != 0;
 					else if (key == "CheckForUpdates")
 						CheckForUpdates = std::stoi(value) != 0;
 					else if (key == "NonBlockingErrors")
@@ -73,13 +87,14 @@ namespace Settings
 
 	bool Save()
 	{
-		std::ofstream file("settings");
+		std::ofstream file(SettingsPath());
 		if (!file.is_open()) return false;
 
 		printf("Saving settings to file...\n");
 
 		file << "UnlockClient=" << std::to_string(UnlockClient) << std::endl;
-		file << "UnlockStudio=" << std::to_string(UnlockStudio) << std::endl;
+		//Disable studio setting until studio is complete
+		//file << "UnlockStudio=" << std::to_string(UnlockStudio) << std::endl;
 		file << "FPSCapSelection=" << std::to_string(FPSCapSelection) << std::endl;
 		file << "FPSCap=" << std::to_string(FPSCap) << std::endl;
 		file << "CheckForUpdates=" << std::to_string(CheckForUpdates) << std::endl;

@@ -165,7 +165,7 @@
     <ClInclude Include="settings.h" />
     <ClInclude Include="sigscan.h" />
     <ClInclude Include="ui.h" />
-    <ClInclude Include="rfu.h" />
+    <ClInclude Include="cfu.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="caelusfpsunlocker.rc" />

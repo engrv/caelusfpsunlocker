@@ -6,31 +6,33 @@
 #include "ui.h"
 #include "resource.h"
 #include "settings.h"
-#include "rfu.h"
+#include "CFU.h"
 
-#define RFU_TRAYICON			WM_APP + 1
-#define RFU_TRAYMENU_APC		WM_APP + 2
-#define RFU_TRAYMENU_CONSOLE	WM_APP + 3
-#define RFU_TRAYMENU_EXIT		WM_APP + 4
-#define RFU_TRAYMENU_VSYNC		WM_APP + 5
-#define RFU_TRAYMENU_LOADSET	WM_APP + 6
-#define RFU_TRAYMENU_GITHUB		WM_APP + 7
-#define RFU_TRAYMENU_STUDIO		WM_APP + 8
-#define RFU_TRAYMENU_CFU		WM_APP + 9
-#define RFU_TRAYMENU_ADV_NBE	WM_APP + 10
-#define RFU_TRAYMENU_ADV_SE		WM_APP + 11
-#define RFU_TRAYMENU_ADV_QS		WM_APP + 12
-#define RFU_TRAYMENU_CLIENT		WM_APP + 13
+#define CFU_TRAYICON			WM_APP + 1
+#define CFU_TRAYMENU_APC		WM_APP + 2
+#define CFU_TRAYMENU_CONSOLE	WM_APP + 3
+#define CFU_TRAYMENU_EXIT		WM_APP + 4
+#define CFU_TRAYMENU_VSYNC		WM_APP + 5
+#define CFU_TRAYMENU_LOADSET	WM_APP + 6
+#define CFU_TRAYMENU_GITHUB		WM_APP + 7
+// Disabled for now since Studio is not complete.
+//#define CFU_TRAYMENU_STUDIO		WM_APP + 8
+#define CFU_TRAYMENU_CFU		WM_APP + 9
+#define CFU_TRAYMENU_ADV_NBE	WM_APP + 10
+#define CFU_TRAYMENU_ADV_SE		WM_APP + 11
+#define CFU_TRAYMENU_ADV_QS		WM_APP + 12
+#define CFU_TRAYMENU_CLIENT		WM_APP + 13
 
-#define RFU_FCS_FIRST			(WM_APP + 20)
-#define RFU_FCS_NONE			RFU_FCS_FIRST + 0
-#define RFU_FCS_30				RFU_FCS_FIRST + 1
-#define RFU_FCS_60				RFU_FCS_FIRST + 2
-#define RFU_FCS_75				RFU_FCS_FIRST + 3
-#define RFU_FCS_120				RFU_FCS_FIRST + 4
-#define RFU_FCS_144				RFU_FCS_FIRST + 5
-#define RFU_FCS_240				RFU_FCS_FIRST + 6
-#define RFU_FCS_LAST			(RFU_FCS_240)
+#define CFU_FCS_FIRST			(WM_APP + 20)
+#define CFU_FCS_NONE			CFU_FCS_FIRST + 0
+#define CFU_FCS_30				CFU_FCS_FIRST + 1
+#define CFU_FCS_60				CFU_FCS_FIRST + 2
+#define CFU_FCS_75				CFU_FCS_FIRST + 3
+#define CFU_FCS_100				CFU_FCS_FIRST + 4
+#define CFU_FCS_120				CFU_FCS_FIRST + 5
+#define CFU_FCS_144				CFU_FCS_FIRST + 6
+#define CFU_FCS_240				CFU_FCS_FIRST + 7
+#define CFU_FCS_LAST			(CFU_FCS_240)
 
 HWND UI::Window = NULL;
 int UI::AttachedProcessesCount = 0;
@@ -43,7 +45,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
-	case RFU_TRAYICON:
+	case CFU_TRAYICON:
 	{
 		if (lParam == WM_RBUTTONDOWN || lParam == WM_LBUTTONDOWN)
 		{
@@ -55,35 +57,37 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			char buffer[64];
 			sprintf_s(buffer, "Attached Processes: %d", UI::AttachedProcessesCount);
 
-			AppendMenu(popup, MF_STRING | MF_GRAYED, RFU_TRAYMENU_APC, buffer);
+			AppendMenu(popup, MF_STRING | MF_GRAYED, CFU_TRAYMENU_APC, buffer);
 			AppendMenu(popup, MF_SEPARATOR, 0, NULL);
 
-			AppendMenu(popup, MF_STRING | (Settings::UnlockClient ? MF_CHECKED : 0), RFU_TRAYMENU_CLIENT, "Unlock Caelus Player");
-			AppendMenu(popup, MF_STRING | (Settings::UnlockStudio ? MF_CHECKED : 0), RFU_TRAYMENU_STUDIO, "Unlock Caelus Studio");
-			AppendMenu(popup, MF_STRING | (Settings::CheckForUpdates ? MF_CHECKED : 0), RFU_TRAYMENU_CFU, "Check for Updates");
+			AppendMenu(popup, MF_STRING | (Settings::UnlockClient ? MF_CHECKED : 0), CFU_TRAYMENU_CLIENT, "Unlock Caelus Player");
+			// Disabled for now since Studio is not complete.
+			//AppendMenu(popup, MF_STRING | (Settings::UnlockStudio ? MF_CHECKED : 0), CFU_TRAYMENU_STUDIO, "Unlock Caelus Studio");
+			AppendMenu(popup, MF_STRING | (Settings::CheckForUpdates ? MF_CHECKED : 0), CFU_TRAYMENU_CFU, "Check for Updates");
 
 			HMENU submenu = CreatePopupMenu();
-			AppendMenu(submenu, MF_STRING, RFU_FCS_NONE, "None");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_30, "30");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_60, "60");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_75, "75");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_120, "120");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_144, "144");
-			AppendMenu(submenu, MF_STRING, RFU_FCS_240, "240");
-			CheckMenuRadioItem(submenu, RFU_FCS_FIRST, RFU_FCS_LAST, RFU_FCS_FIRST + Settings::FPSCapSelection, MF_BYCOMMAND);
+			AppendMenu(submenu, MF_STRING, CFU_FCS_NONE, "None");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_30, "30");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_60, "60");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_75, "75");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_100, "100");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_120, "120");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_144, "144");
+			AppendMenu(submenu, MF_STRING, CFU_FCS_240, "240");
+			CheckMenuRadioItem(submenu, CFU_FCS_FIRST, CFU_FCS_LAST, CFU_FCS_FIRST + Settings::FPSCapSelection, MF_BYCOMMAND);
 			AppendMenu(popup, MF_POPUP, (UINT_PTR)submenu, "FPS Cap");
 
 			HMENU advanced = CreatePopupMenu();
-			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_SE, "Silent Errors");
-			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (Settings::NonBlockingErrors ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_NBE, "Use Console Errors");
-			AppendMenu(advanced, MF_STRING | (Settings::QuickStart ? MF_CHECKED : 0), RFU_TRAYMENU_ADV_QS, "Quick Start");
+			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_CHECKED : 0), CFU_TRAYMENU_ADV_SE, "Silent Errors");
+			AppendMenu(advanced, MF_STRING | (Settings::SilentErrors ? MF_GRAYED : 0) | (Settings::NonBlockingErrors ? MF_CHECKED : 0), CFU_TRAYMENU_ADV_NBE, "Use Console Errors");
+			AppendMenu(advanced, MF_STRING | (Settings::QuickStart ? MF_CHECKED : 0), CFU_TRAYMENU_ADV_QS, "Quick Start");
 			AppendMenu(popup, MF_POPUP, (UINT_PTR)advanced, "Advanced");
 
 			AppendMenu(popup, MF_SEPARATOR, 0, NULL);
-			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_LOADSET, "Load Settings");
-			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_CONSOLE, "Toggle Console");
-			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_GITHUB, "Visit GitHub");
-			AppendMenu(popup, MF_STRING, RFU_TRAYMENU_EXIT, "Exit");
+			AppendMenu(popup, MF_STRING, CFU_TRAYMENU_LOADSET, "Load Settings");
+			AppendMenu(popup, MF_STRING, CFU_TRAYMENU_CONSOLE, "Toggle Console");
+			AppendMenu(popup, MF_STRING, CFU_TRAYMENU_GITHUB, "Visit GitHub");
+			AppendMenu(popup, MF_STRING, CFU_TRAYMENU_EXIT, "Exit");
 
 			SetForegroundWindow(hwnd);
 			BOOL result = TrackPopupMenu(popup, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN, position.x, position.y, 0, hwnd, NULL);
@@ -92,7 +96,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				switch (result)
 				{
-				case RFU_TRAYMENU_EXIT:
+				case CFU_TRAYMENU_EXIT:
 					SetFPSCapExternal(60);
 					Shell_NotifyIcon(NIM_DELETE, &NotifyIconData);
 					TerminateThread(WatchThread, 0);
@@ -100,64 +104,66 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					PostQuitMessage(0);
 					break;
 
-				case RFU_TRAYMENU_CONSOLE:
+				case CFU_TRAYMENU_CONSOLE:
 					UI::ToggleConsole();
 					break;
 
-				case RFU_TRAYMENU_GITHUB:
-					ShellExecuteA(NULL, "open", "https://github.com/" RFU_GITHUB_REPO, NULL, NULL, SW_SHOWNORMAL);
+				case CFU_TRAYMENU_GITHUB:
+					ShellExecuteA(NULL, "open", "https://github.com/" CFU_GITHUB_REPO, NULL, NULL, SW_SHOWNORMAL);
 					break;
 
-				case RFU_TRAYMENU_LOADSET:
+				case CFU_TRAYMENU_LOADSET:
 					Settings::Load();
 					Settings::Update();
 					break;
 
-				case RFU_TRAYMENU_CLIENT:
+				case CFU_TRAYMENU_CLIENT:
 					Settings::UnlockClient = !Settings::UnlockClient;
-					CheckMenuItem(popup, RFU_TRAYMENU_CLIENT, Settings::UnlockClient ? MF_CHECKED : MF_UNCHECKED);
+					CheckMenuItem(popup, CFU_TRAYMENU_CLIENT, Settings::UnlockClient ? MF_CHECKED : MF_UNCHECKED);
 					break;
 
-				case RFU_TRAYMENU_STUDIO:
-					Settings::UnlockStudio = !Settings::UnlockStudio;
-					CheckMenuItem(popup, RFU_TRAYMENU_STUDIO, Settings::UnlockStudio ? MF_CHECKED : MF_UNCHECKED);
-					break;
+				// Disabled for now since Studio is not complete.
+				
+				//case CFU_TRAYMENU_STUDIO:
+				//	Settings::UnlockStudio = !Settings::UnlockStudio;
+				//	CheckMenuItem(popup, CFU_TRAYMENU_STUDIO, Settings::UnlockStudio ? MF_CHECKED : MF_UNCHECKED);
+				//	break;
 
-				case RFU_TRAYMENU_CFU:
+				case CFU_TRAYMENU_CFU:
 					Settings::CheckForUpdates = !Settings::CheckForUpdates;
-					CheckMenuItem(popup, RFU_TRAYMENU_CFU, Settings::CheckForUpdates ? MF_CHECKED : MF_UNCHECKED);
+					CheckMenuItem(popup, CFU_TRAYMENU_CFU, Settings::CheckForUpdates ? MF_CHECKED : MF_UNCHECKED);
 					break;
 
-				case RFU_TRAYMENU_ADV_NBE:
+				case CFU_TRAYMENU_ADV_NBE:
 					Settings::NonBlockingErrors = !Settings::NonBlockingErrors;
-					CheckMenuItem(popup, RFU_TRAYMENU_ADV_NBE, Settings::NonBlockingErrors ? MF_CHECKED : MF_UNCHECKED);
+					CheckMenuItem(popup, CFU_TRAYMENU_ADV_NBE, Settings::NonBlockingErrors ? MF_CHECKED : MF_UNCHECKED);
 					break;
 
-				case RFU_TRAYMENU_ADV_SE:
+				case CFU_TRAYMENU_ADV_SE:
 					Settings::SilentErrors = !Settings::SilentErrors;
-					CheckMenuItem(popup, RFU_TRAYMENU_ADV_SE, Settings::SilentErrors ? MF_CHECKED : MF_UNCHECKED);
-					if (Settings::SilentErrors) CheckMenuItem(popup, RFU_TRAYMENU_ADV_NBE, MF_GRAYED);
+					CheckMenuItem(popup, CFU_TRAYMENU_ADV_SE, Settings::SilentErrors ? MF_CHECKED : MF_UNCHECKED);
+					if (Settings::SilentErrors) CheckMenuItem(popup, CFU_TRAYMENU_ADV_NBE, MF_GRAYED);
 					break;
 
-				case RFU_TRAYMENU_ADV_QS:
+				case CFU_TRAYMENU_ADV_QS:
 					Settings::QuickStart = !Settings::QuickStart;
-					CheckMenuItem(popup, RFU_TRAYMENU_ADV_QS, Settings::QuickStart ? MF_CHECKED : MF_UNCHECKED);
+					CheckMenuItem(popup, CFU_TRAYMENU_ADV_QS, Settings::QuickStart ? MF_CHECKED : MF_UNCHECKED);
 					break;
 
 				default:
-					if (result >= RFU_FCS_FIRST
-						&& result <= RFU_FCS_LAST)
+					if (result >= CFU_FCS_FIRST
+						&& result <= CFU_FCS_LAST)
 					{
-						static double fcs_map[] = { 0.0, 30.0, 60.0, 75.0, 120.0, 144.0, 240.0 };
-						Settings::FPSCapSelection = result - RFU_FCS_FIRST;
+						static double fcs_map[] = { 0.0, 30.0, 60.0, 75.0, 100.0, 120.0, 144.0, 240.0 };
+						Settings::FPSCapSelection = result - CFU_FCS_FIRST;
 						Settings::FPSCap = fcs_map[Settings::FPSCapSelection];
 					}
 				}
 
-				if (result != RFU_TRAYMENU_CONSOLE
-					&& result != RFU_TRAYMENU_LOADSET
-					&& result != RFU_TRAYMENU_GITHUB
-					&& result != RFU_TRAYMENU_EXIT)
+				if (result != CFU_TRAYMENU_CONSOLE
+					&& result != CFU_TRAYMENU_LOADSET
+					&& result != CFU_TRAYMENU_GITHUB
+					&& result != CFU_TRAYMENU_EXIT)
 				{
 					Settings::Update();
 					Settings::Save();
@@ -198,9 +204,7 @@ void UI::CreateHiddenConsole()
 	}
 
 #ifdef _WIN64
-	SetConsoleTitleA("Caelus FPS Unlocker " RFU_VERSION " (64-bit) Console");
-#else
-	SetConsoleTitleA("Caelus FPS Unlocker " RFU_VERSION " (32-bit) Console");
+	SetConsoleTitleA("Caelus FPS Unlocker " CFU_VERSION " Console");
 #endif
 
 	SetConsoleVisible(false);
@@ -230,12 +234,12 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = "RFUClass";
+	wcex.lpszClassName = "CFUClass";
 	wcex.hIconSm = NULL;
 
 	RegisterClassEx(&wcex);
 
-	UI::Window = CreateWindow("RFUClass", "Caelus FPS Unlocker", 0, 0, 0, 0, 0, NULL, NULL, instance, NULL);
+	UI::Window = CreateWindow("CFUClass", "Caelus FPS Unlocker", 0, 0, 0, 0, 0, NULL, NULL, instance, NULL);
 	if (!UI::Window)
 		return 0;
 
@@ -243,7 +247,7 @@ int UI::Start(HINSTANCE instance, LPTHREAD_START_ROUTINE watchthread)
 	NotifyIconData.hWnd = UI::Window;
 	NotifyIconData.uID = IDI_ICON1;
 	NotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-	NotifyIconData.uCallbackMessage = RFU_TRAYICON;
+	NotifyIconData.uCallbackMessage = CFU_TRAYICON;
 	NotifyIconData.hIcon = LoadIcon(instance, MAKEINTRESOURCE(IDI_ICON1));
 	strcpy_s(NotifyIconData.szTip, "Caelus FPS Unlocker");
 

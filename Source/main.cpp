@@ -11,20 +11,22 @@
 
 #include "ui.h"
 #include "settings.h"
-#include "rfu.h"
+#include "CFU.h"
 #include "procutil.h"
 #include "sigscan.h"
 
 HANDLE SingletonMutex;
 
-std::vector<HANDLE> GetCaelusProcesses(bool include_client = true, bool include_studio = true)
+// Disable hooking of studio process until it's complete.
+std::vector<HANDLE> GetCaelusProcesses(bool include_client = true) //, bool include_studio = true)
 {
 	std::vector<HANDLE> result;
 	if (include_client)
 	{
 		for (HANDLE handle : ProcUtil::GetProcessesByImageName("KitsuKitsuPlayerBeta.exe")) result.emplace_back(handle);
 	}
-	if (include_studio) for (HANDLE handle : ProcUtil::GetProcessesByImageName("RobloxStudioBeta.exe")) result.emplace_back(handle);
+	// Disabled for now since Studio is not complete.
+	//if (include_studio) for (HANDLE handle : ProcUtil::GetProcessesByImageName("RobloxStudioBeta.exe")) result.emplace_back(handle);
 	return result;
 }
 
@@ -314,8 +316,8 @@ DWORD WINAPI WatchThread(LPVOID)
 	printf("Watch thread started\n");
 
 	while (1)
-	{
-		auto processes = GetCaelusProcesses(Settings::UnlockClient, Settings::UnlockStudio);
+	{																// Disable hooking of studio process until it's complete.
+		auto processes = GetCaelusProcesses(Settings::UnlockClient); //, Settings::UnlockStudio);
 
 		for (auto& process : processes)
 		{
@@ -369,7 +371,7 @@ DWORD WINAPI WatchThread(LPVOID)
 
 bool CheckRunning()
 {
-	SingletonMutex = CreateMutexA(NULL, FALSE, "RFUMutex");
+	SingletonMutex = CreateMutexA(NULL, FALSE, "CFUMutex");
 
 	if (!SingletonMutex)
 	{

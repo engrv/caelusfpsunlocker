@@ -6,7 +6,8 @@ namespace Settings
 	extern unsigned char FPSCapSelection;
 	extern double FPSCap;
 	extern bool UnlockClient;
-	extern bool UnlockStudio;
+	//Disable studio setting until studio is complete
+	//extern bool UnlockStudio;
 	extern bool CheckForUpdates;
 	extern bool NonBlockingErrors;
 	extern bool SilentErrors;

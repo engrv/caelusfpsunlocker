@@ -1,4 +1,4 @@
-#include "rfu.h"
+#include "CFU.h"
 
 #include <Windows.h>
 
@@ -10,7 +10,7 @@
 
 bool HttpRequest(const char *url, std::string &response)
 {
-	if (HINTERNET internet = InternetOpenA("engrv/caelusfpsunlocker", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL))
+	if (HINTERNET internet = InternetOpenA("resynthesise/caelusfpsunlocker", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL))
 	{
 		if (HINTERNET request = InternetOpenUrlA(internet, url, NULL, 0, INTERNET_FLAG_NO_UI | INTERNET_FLAG_NO_CACHE_WRITE, NULL))
 		{
@@ -39,7 +39,7 @@ bool HttpRequest(const char *url, std::string &response)
 bool CheckForUpdates()
 {
 	std::string response;
-	if (!HttpRequest("https://api.github.com/repos/" RFU_GITHUB_REPO "/releases/latest", response))
+	if (!HttpRequest("https://api.github.com/repos/" CFU_GITHUB_REPO "/releases/latest", response))
 	{
 		MessageBoxA(NULL, "Failed to connect to Github", "Update Check", MB_OK);
 		return false;
@@ -57,14 +57,14 @@ bool CheckForUpdates()
 
 	std::string latest_version = matches[1].str();
 
-	if (latest_version != RFU_VERSION)
+	if (latest_version != CFU_VERSION)
 	{
 		char buffer[256];
-		sprintf_s(buffer, "A new version of Caelus FPS Unlocker is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?", RFU_VERSION, latest_version.c_str());
+		sprintf_s(buffer, "A new version of Caelus FPS Unlocker is available.\n\nCurrent Version: %s\nLatest Version: %s\n\nVisit download page?", CFU_VERSION, latest_version.c_str());
 
 		if (MessageBoxA(NULL, buffer, "Update Check", MB_YESNOCANCEL | MB_ICONEXCLAMATION) == IDYES)
 		{
-			ShellExecuteA(NULL, "open", "https://github.com/" RFU_GITHUB_REPO "/releases", NULL, NULL, SW_SHOWNORMAL);
+			ShellExecuteA(NULL, "open", "https://github.com/" CFU_GITHUB_REPO "/releases", NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		}
 	}
